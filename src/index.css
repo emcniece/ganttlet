@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "../node_modules/frappe-gantt/dist/frappe-gantt.css";
 
+.gantt .grid-header {
+  min-width: 100%;
+}
+
 .gantt .bar-label,
 .gantt .lower-text,
 .gantt .upper-text {

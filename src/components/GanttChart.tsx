@@ -47,6 +47,7 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
 
       ganttRef.current = new Gantt(containerRef.current, frappeTasks, {
         view_mode: 'Day',
+        scroll_to: 'start',
         popup: false,
         readonly_progress: true,
         today_button: true,
