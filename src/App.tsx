@@ -7,6 +7,7 @@ import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
 import { Toolbar } from './components/Toolbar'
 import { SettingsModal } from './components/SettingsModal'
+import { LegalModal } from './components/LegalModal'
 import { sampleTasks } from './sampleTasks'
 import { applyDateChange } from './utils/transformTasks'
 
@@ -16,6 +17,8 @@ export default function App() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
+  const [isTermsOpen, setIsTermsOpen] = useState(false)
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -107,6 +110,16 @@ export default function App() {
         <div className="bg-white rounded-lg shadow p-4">
           <TaskTable tasks={tasks} onEdit={handleEdit} onDelete={handleDelete} />
         </div>
+
+        <footer className="mt-6 text-center text-xs text-gray-400">
+          <button onClick={() => setIsPrivacyOpen(true)} className="hover:text-gray-600 underline">
+            Privacy Policy
+          </button>
+          <span className="mx-2">·</span>
+          <button onClick={() => setIsTermsOpen(true)} className="hover:text-gray-600 underline">
+            Terms of Service
+          </button>
+        </footer>
       </div>
 
       {isFormOpen && (
@@ -130,6 +143,22 @@ export default function App() {
           }}
           onCancel={() => setIsSettingsOpen(false)}
         />
+      )}
+
+      {isPrivacyOpen && (
+        <LegalModal title="Privacy Policy" onClose={() => setIsPrivacyOpen(false)}>
+          <p>Ganttlet is a static, client-side application. No data is collected or transmitted to any server.</p>
+          <p>Your tasks are stored exclusively in your browser's localStorage. No cookies, analytics, or tracking of any kind are used.</p>
+          <p>If you use the optional Google Sheets export, your task data is sent directly to Google via their API. This action is always user-initiated and governed by Google's own privacy policies.</p>
+        </LegalModal>
+      )}
+
+      {isTermsOpen && (
+        <LegalModal title="Terms of Service" onClose={() => setIsTermsOpen(false)}>
+          <p>Ganttlet is provided "as is" without warranty of any kind, express or implied.</p>
+          <p>All data is stored locally in your browser. You are responsible for backing up your own data. The authors are not liable for any data loss.</p>
+          <p>Use of this application is at your own risk.</p>
+        </LegalModal>
       )}
     </div>
   )
