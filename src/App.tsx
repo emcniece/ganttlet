@@ -6,9 +6,10 @@ import { GanttChart } from './components/GanttChart'
 import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
 import { Toolbar } from './components/Toolbar'
+import { sampleTasks } from './sampleTasks'
 
 export default function App() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>('gantt-tasks', [])
+  const [tasks, setTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [chartReady, setChartReady] = useState(false)
@@ -58,7 +59,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Gantt Chart</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Ganttlet</h1>
           <div className="flex gap-3 items-center">
             <Toolbar
               tasks={tasks}
