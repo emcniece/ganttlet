@@ -17,51 +17,41 @@ export default function App() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const getHashRoute = useCallback(() => window.location.hash.replace('#', ''), [])
 
-  const getAppRoute = useCallback(() => {
-    const { pathname } = window.location
-    return basePath && pathname.startsWith(basePath)
-      ? pathname.slice(basePath.length) || '/'
-      : pathname
-  }, [basePath])
-
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(() => getAppRoute() === '/privacy')
-  const [isTermsOpen, setIsTermsOpen] = useState(() => getAppRoute() === '/terms')
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(() => getHashRoute() === '/privacy')
+  const [isTermsOpen, setIsTermsOpen] = useState(() => getHashRoute() === '/terms')
 
   const openPrivacy = () => {
     setIsPrivacyOpen(true)
-    window.history.pushState(null, '', `${basePath}/privacy`)
+    window.location.hash = '/privacy'
   }
 
   const closePrivacy = () => {
     setIsPrivacyOpen(false)
-    if (getAppRoute() === '/privacy') {
-      window.history.replaceState(null, '', `${basePath}/`)
-    }
+    window.history.replaceState(null, '', window.location.pathname)
   }
 
   const openTerms = () => {
     setIsTermsOpen(true)
-    window.history.pushState(null, '', `${basePath}/terms`)
+    window.location.hash = '/terms'
   }
 
   const closeTerms = () => {
     setIsTermsOpen(false)
-    if (getAppRoute() === '/terms') {
-      window.history.replaceState(null, '', `${basePath}/`)
-    }
+    window.history.replaceState(null, '', window.location.pathname)
   }
 
   useEffect(() => {
-    const handlePopState = () => {
-      const route = getAppRoute()
+    const handleHashChange = () => {
+      const route = getHashRoute()
       setIsPrivacyOpen(route === '/privacy')
       setIsTermsOpen(route === '/terms')
     }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [getAppRoute])
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [getHashRoute])
+
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
 
