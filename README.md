@@ -4,9 +4,9 @@ A free, static Gantt chart tool. No signups, no backend — just open it and sta
 
 ## Features
 
-- **Interactive Gantt chart** powered by Google Charts
+- **Interactive Gantt chart** powered by frappe-gantt — drag to move, resize to adjust, click to edit
 - **Task management** — add, edit, and delete tasks with a form-based UI
-- **Dependencies** — link tasks together and visualize the critical path
+- **Dependencies** — link tasks together with dependency arrows
 - **Persistent** — tasks save to localStorage automatically
 - **JSON import/export** — save your project to a file, load it back anytime
 - **PNG export** — download a high-resolution image of your chart
@@ -38,7 +38,7 @@ Push to `main` and GitHub Actions will automatically build and deploy to GitHub 
 - React 19 + TypeScript
 - Vite
 - Tailwind CSS v4
-- react-google-charts
+- frappe-gantt (interactive drag/resize/click)
 - html-to-image (PNG export)
 
 ## License
