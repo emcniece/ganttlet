@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import type { Task } from './types'
 import { useLocalStorage } from './hooks/useLocalStorage'
@@ -17,8 +17,51 @@ export default function App() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
-  const [isTermsOpen, setIsTermsOpen] = useState(false)
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+
+  const getAppRoute = useCallback(() => {
+    const { pathname } = window.location
+    return basePath && pathname.startsWith(basePath)
+      ? pathname.slice(basePath.length) || '/'
+      : pathname
+  }, [basePath])
+
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(() => getAppRoute() === '/privacy')
+  const [isTermsOpen, setIsTermsOpen] = useState(() => getAppRoute() === '/terms')
+
+  const openPrivacy = () => {
+    setIsPrivacyOpen(true)
+    window.history.pushState(null, '', `${basePath}/privacy`)
+  }
+
+  const closePrivacy = () => {
+    setIsPrivacyOpen(false)
+    if (getAppRoute() === '/privacy') {
+      window.history.replaceState(null, '', `${basePath}/`)
+    }
+  }
+
+  const openTerms = () => {
+    setIsTermsOpen(true)
+    window.history.pushState(null, '', `${basePath}/terms`)
+  }
+
+  const closeTerms = () => {
+    setIsTermsOpen(false)
+    if (getAppRoute() === '/terms') {
+      window.history.replaceState(null, '', `${basePath}/`)
+    }
+  }
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const route = getAppRoute()
+      setIsPrivacyOpen(route === '/privacy')
+      setIsTermsOpen(route === '/terms')
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [getAppRoute])
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -112,11 +155,11 @@ export default function App() {
         </div>
 
         <footer className="mt-6 text-center text-xs text-gray-400">
-          <button onClick={() => setIsPrivacyOpen(true)} className="hover:text-gray-600 underline">
+          <button onClick={openPrivacy} className="hover:text-gray-600 underline">
             Privacy Policy
           </button>
           <span className="mx-2">·</span>
-          <button onClick={() => setIsTermsOpen(true)} className="hover:text-gray-600 underline">
+          <button onClick={openTerms} className="hover:text-gray-600 underline">
             Terms of Service
           </button>
         </footer>
@@ -146,7 +189,7 @@ export default function App() {
       )}
 
       {isPrivacyOpen && (
-        <LegalModal title="Privacy Policy" onClose={() => setIsPrivacyOpen(false)}>
+        <LegalModal title="Privacy Policy" onClose={closePrivacy}>
           <p>Ganttlet is a static, client-side application. No data is collected or transmitted to any server.</p>
           <p>Your tasks are stored exclusively in your browser's localStorage. No cookies, analytics, or tracking of any kind are used.</p>
           <p>If you use the optional Google Sheets export, your task data is sent directly to Google via their API. This action is always user-initiated and governed by Google's own privacy policies.</p>
@@ -154,7 +197,7 @@ export default function App() {
       )}
 
       {isTermsOpen && (
-        <LegalModal title="Terms of Service" onClose={() => setIsTermsOpen(false)}>
+        <LegalModal title="Terms of Service" onClose={closeTerms}>
           <p>Ganttlet is provided "as is" without warranty of any kind, express or implied.</p>
           <p>All data is stored locally in your browser. You are responsible for backing up your own data. The authors are not liable for any data loss.</p>
           <p>Use of this application is at your own risk.</p>
