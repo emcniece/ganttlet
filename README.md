@@ -10,11 +10,15 @@ A free, static Gantt chart tool. No signups, no backend — just open it and sta
 ## Features
 
 - **Interactive Gantt chart** powered by frappe-gantt — drag to move, resize to adjust, click to edit
+- **Multiple view modes** — switch between Day, Week, Month, and Year views
 - **Task management** — add, edit, and delete tasks with a form-based UI
+- **Task colors** — assign colors to tasks for visual grouping
 - **Dependencies** — link tasks together with dependency arrows
 - **Persistent** — tasks save to localStorage automatically
 - **JSON import/export** — save your project to a file, load it back anytime
-- **PNG export** — download a high-resolution image of your chart
+- **PNG export** — download a cropped, high-resolution image with date headers
+- **Google Sheets export** — push tasks to a Google Sheet via OAuth
+- **Privacy Policy & Terms of Service** — accessible via footer links or direct URL (`#/privacy`, `#/terms`)
 - **Fully static** — deploy anywhere (GitHub Pages, S3, Netlify, etc.)
 
 ## Getting Started
@@ -51,7 +55,7 @@ Push to `main` and GitHub Actions will automatically build and deploy to GitHub 
 - Vite
 - Tailwind CSS v4
 - frappe-gantt (interactive drag/resize/click)
-- html-to-image (PNG export)
+- Canvas API (PNG export via SVG serialization)
 
 ## License
 

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Task } from '../types'
 import { exportJSON, importJSON } from '../utils/fileIO'
-import { exportPNG } from '../utils/exportPNG'
+import { exportPNG, openChartImage } from '../utils/exportPNG'
 import { getAccessToken } from '../utils/googleAuth'
 import { exportToGoogleSheets } from '../utils/googleSheets'
 
@@ -36,6 +36,15 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
       await exportPNG(chartRef.current)
     } catch {
       alert('Failed to export PNG. The chart may contain elements that cannot be captured.')
+    }
+  }
+
+  const handleOpenImage = async () => {
+    if (!chartRef.current) return
+    try {
+      await openChartImage(chartRef.current)
+    } catch {
+      alert('Failed to generate chart image.')
     }
   }
 
@@ -85,6 +94,14 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
         className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Export PNG
+      </button>
+      <button
+        onClick={handleOpenImage}
+        disabled={!chartReady || tasks.length === 0}
+        className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
+        title="Open chart image in a new tab"
+      >
+        View Image
       </button>
       <button
         onClick={handleExportSheets}

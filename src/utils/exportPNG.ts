@@ -94,7 +94,7 @@ function readHeaderLabels(
   return { labels, height: headerHeight }
 }
 
-export async function exportPNG(element: HTMLElement): Promise<void> {
+export async function renderChartImage(element: HTMLElement): Promise<string> {
   const svgEl = element.querySelector('svg.gantt') as SVGSVGElement
   if (!svgEl) throw new Error('Chart SVG not found')
 
@@ -181,9 +181,18 @@ export async function exportPNG(element: HTMLElement): Promise<void> {
   })
   ctx.drawImage(img, 0, headerHeight, vw, vh)
 
-  const pngUrl = canvas.toDataURL('image/png')
+  return canvas.toDataURL('image/png')
+}
+
+export async function exportPNG(element: HTMLElement): Promise<void> {
+  const pngUrl = await renderChartImage(element)
   const a = document.createElement('a')
   a.href = pngUrl
   a.download = 'ganttlet.png'
   a.click()
+}
+
+export async function openChartImage(element: HTMLElement): Promise<void> {
+  const pngUrl = await renderChartImage(element)
+  window.open(pngUrl, '_blank')
 }
