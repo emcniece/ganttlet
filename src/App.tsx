@@ -145,13 +145,13 @@ export default function App() {
         </div>
 
         <footer className="mt-6 text-center text-xs text-gray-400">
-          <button onClick={openPrivacy} className="hover:text-gray-600 underline">
+          <a href="#/privacy" onClick={openPrivacy} className="hover:text-gray-600 underline">
             Privacy Policy
-          </button>
+          </a>
           <span className="mx-2">·</span>
-          <button onClick={openTerms} className="hover:text-gray-600 underline">
+          <a href="#/terms" onClick={openTerms} className="hover:text-gray-600 underline">
             Terms of Service
-          </button>
+          </a>
         </footer>
       </div>
 
