@@ -42,6 +42,12 @@ export function SettingsModal({ clientId, onSave, onCancel }: SettingsModalProps
               <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Google Cloud Console</a></li>
               <li>Create a project (or select an existing one)</li>
               <li>Enable the <strong>Google Sheets API</strong></li>
+              <li>Configure the <strong>OAuth consent screen</strong> and use these URLs:
+                <ul className="list-disc ml-4 mt-0.5 space-y-0.5">
+                  <li>Privacy Policy: <code className="bg-gray-100 px-1 rounded">https://emcniece.github.io/ganttlet/#/privacy</code></li>
+                  <li>Terms of Service: <code className="bg-gray-100 px-1 rounded">https://emcniece.github.io/ganttlet/#/terms</code></li>
+                </ul>
+              </li>
               <li>Create an <strong>OAuth 2.0 Client ID</strong> (Web application)</li>
               <li>Add your site's origin to <strong>Authorized JavaScript origins</strong></li>
             </ol>
