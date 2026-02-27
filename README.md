@@ -1,6 +1,11 @@
 # Ganttlet
 
+[![CI](https://github.com/emcniece/ganttlet/actions/workflows/ci.yml/badge.svg)](https://github.com/emcniece/ganttlet/actions/workflows/ci.yml)
+[![Deploy](https://github.com/emcniece/ganttlet/actions/workflows/deploy.yml/badge.svg)](https://github.com/emcniece/ganttlet/actions/workflows/deploy.yml)
+
 A free, static Gantt chart tool. No signups, no backend — just open it and start planning.
+
+**[Try it live](https://emcniece.github.io/ganttlet/)**
 
 ## Features
 
@@ -28,6 +33,13 @@ npm run build
 ```
 
 Output is in `dist/`. Preview the production build with `npm run preview`.
+
+## Testing
+
+```bash
+npm test            # single run (used in CI)
+npm run test:watch  # watch mode for development
+```
 
 ## Deployment
 
