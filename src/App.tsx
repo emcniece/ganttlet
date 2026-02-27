@@ -7,6 +7,7 @@ import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
 import { Toolbar } from './components/Toolbar'
 import { sampleTasks } from './sampleTasks'
+import { applyDateChange } from './utils/transformTasks'
 
 export default function App() {
   const [tasks, setTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
@@ -50,6 +51,18 @@ export default function App() {
     setChartReady(false)
   }
 
+  const handleTaskDateChange = useCallback(
+    (taskId: string, start: Date, end: Date) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== taskId) return t
+          return { ...t, ...applyDateChange(t, start, end) }
+        })
+      )
+    },
+    [setTasks]
+  )
+
   const handleImport = (imported: Task[]) => {
     setTasks(imported)
     setChartReady(false)
@@ -77,7 +90,13 @@ export default function App() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <GanttChart ref={chartRef} tasks={tasks} onReady={handleChartReady} />
+          <GanttChart
+            ref={chartRef}
+            tasks={tasks}
+            onTaskClick={handleEdit}
+            onTaskDateChange={handleTaskDateChange}
+            onReady={handleChartReady}
+          />
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">

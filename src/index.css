@@ -1,1 +1,9 @@
 @import "tailwindcss";
+@import "../node_modules/frappe-gantt/dist/frappe-gantt.css";
+
+.gantt .bar-label,
+.gantt .lower-text,
+.gantt .upper-text {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
