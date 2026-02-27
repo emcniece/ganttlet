@@ -7,6 +7,7 @@ export interface Task {
   duration: number | null // milliseconds, null if start+end provided
   percentComplete: number // 0-100
   dependencies: string[] // array of task IDs
+  color?: string // hex colour for gantt bar
 }
 
 export interface AppData {

@@ -6,13 +6,16 @@ import { GanttChart } from './components/GanttChart'
 import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
 import { Toolbar } from './components/Toolbar'
+import { SettingsModal } from './components/SettingsModal'
 import { sampleTasks } from './sampleTasks'
 import { applyDateChange } from './utils/transformTasks'
 
 export default function App() {
   const [tasks, setTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
+  const [googleClientId, setGoogleClientId] = useLocalStorage<string>('gantt-google-client-id', '')
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -79,6 +82,8 @@ export default function App() {
               onImport={handleImport}
               chartRef={chartRef}
               chartReady={chartReady}
+              googleClientId={googleClientId}
+              onOpenSettings={() => setIsSettingsOpen(true)}
             />
             <button
               onClick={handleAdd}
@@ -113,6 +118,17 @@ export default function App() {
             setIsFormOpen(false)
             setEditingTask(null)
           }}
+        />
+      )}
+
+      {isSettingsOpen && (
+        <SettingsModal
+          clientId={googleClientId}
+          onSave={(id) => {
+            setGoogleClientId(id)
+            setIsSettingsOpen(false)
+          }}
+          onCancel={() => setIsSettingsOpen(false)}
         />
       )}
     </div>

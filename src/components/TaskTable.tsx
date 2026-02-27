@@ -26,7 +26,17 @@ export function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
         <tbody>
           {tasks.map((task) => (
             <tr key={task.id} className="hover:bg-gray-50">
-              <td className="p-2 border border-gray-200">{task.name}</td>
+              <td className="p-2 border border-gray-200">
+                <div className="flex items-center gap-2">
+                  {task.color && (
+                    <span
+                      className="inline-block w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: task.color }}
+                    />
+                  )}
+                  {task.name}
+                </div>
+              </td>
               <td className="p-2 border border-gray-200">{task.resource}</td>
               <td className="p-2 border border-gray-200">{task.start}</td>
               <td className="p-2 border border-gray-200">{task.end}</td>

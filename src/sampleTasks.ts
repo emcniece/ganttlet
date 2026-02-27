@@ -10,6 +10,7 @@ export const sampleTasks: Task[] = [
     duration: null,
     percentComplete: 100,
     dependencies: [],
+    color: '#3b82f6',
   },
   {
     id: 'sample-2',
@@ -20,6 +21,7 @@ export const sampleTasks: Task[] = [
     duration: null,
     percentComplete: 75,
     dependencies: ['sample-1'],
+    color: '#8b5cf6',
   },
   {
     id: 'sample-3',
@@ -30,6 +32,7 @@ export const sampleTasks: Task[] = [
     duration: null,
     percentComplete: 40,
     dependencies: ['sample-1'],
+    color: '#10b981',
   },
   {
     id: 'sample-4',
@@ -40,6 +43,7 @@ export const sampleTasks: Task[] = [
     duration: null,
     percentComplete: 0,
     dependencies: ['sample-3'],
+    color: '#f59e0b',
   },
   {
     id: 'sample-5',
@@ -50,5 +54,6 @@ export const sampleTasks: Task[] = [
     duration: null,
     percentComplete: 0,
     dependencies: ['sample-2', 'sample-4'],
+    color: '#ef4444',
   },
 ]

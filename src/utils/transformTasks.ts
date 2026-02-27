@@ -9,6 +9,7 @@ export function transformToFrappeTasks(tasks: Task[]): FrappeTask[] {
     end: t.end,
     progress: t.percentComplete,
     dependencies: t.dependencies.join(', '),
+    color: t.color,
   }))
 }
 

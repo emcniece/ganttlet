@@ -8,6 +8,17 @@ interface TaskFormProps {
   onCancel: () => void
 }
 
+const TASK_COLORS = [
+  { name: 'Blue', hex: '#3b82f6' },
+  { name: 'Emerald', hex: '#10b981' },
+  { name: 'Amber', hex: '#f59e0b' },
+  { name: 'Red', hex: '#ef4444' },
+  { name: 'Violet', hex: '#8b5cf6' },
+  { name: 'Cyan', hex: '#06b6d4' },
+  { name: 'Pink', hex: '#ec4899' },
+  { name: 'Orange', hex: '#f97316' },
+]
+
 const MS_PER_DAY = 86400000
 
 function todayISO(): string {
@@ -24,6 +35,7 @@ export function TaskForm({ task, tasks, onSave, onCancel }: TaskFormProps) {
   const [percentComplete, setPercentComplete] = useState(0)
   const [dependencies, setDependencies] = useState<string[]>([])
   const [useDuration, setUseDuration] = useState(false)
+  const [color, setColor] = useState(TASK_COLORS[0].hex)
 
   useEffect(() => {
     if (task) {
@@ -33,6 +45,7 @@ export function TaskForm({ task, tasks, onSave, onCancel }: TaskFormProps) {
       setEnd(task.end)
       setPercentComplete(task.percentComplete)
       setDependencies(task.dependencies)
+      setColor(task.color ?? TASK_COLORS[0].hex)
       if (task.duration !== null) {
         setUseDuration(true)
         setDurationDays(String(task.duration / MS_PER_DAY))
@@ -56,6 +69,7 @@ export function TaskForm({ task, tasks, onSave, onCancel }: TaskFormProps) {
       duration: useDuration && durationDays ? Number(durationDays) * MS_PER_DAY : null,
       percentComplete,
       dependencies,
+      color,
     }
     onSave(saved)
   }
@@ -99,6 +113,24 @@ export function TaskForm({ task, tasks, onSave, onCancel }: TaskFormProps) {
               placeholder="e.g. Development, Design"
               className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Colour</label>
+            <div className="flex gap-2">
+              {TASK_COLORS.map((c) => (
+                <button
+                  key={c.hex}
+                  type="button"
+                  title={c.name}
+                  onClick={() => setColor(c.hex)}
+                  className={`w-7 h-7 rounded-full border-2 ${
+                    color === c.hex ? 'border-gray-800 ring-2 ring-offset-1 ring-gray-400' : 'border-transparent'
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
