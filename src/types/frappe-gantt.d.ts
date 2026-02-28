@@ -46,6 +46,9 @@ declare module 'frappe-gantt' {
     )
     refresh(tasks: FrappeTask[]): void
     change_view_mode(mode?: string): void
+    setup_gantt_dates(refresh: boolean): void
+    gantt_start: Date
+    gantt_end: Date
     options: GanttOptions & { bar_height: number; padding: number }
     config: { header_height: number }
   }

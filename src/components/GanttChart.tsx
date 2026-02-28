@@ -8,6 +8,8 @@ import { useGanttDependencyLink } from '../hooks/useGanttDependencyLink'
 
 interface GanttChartProps {
   tasks: Task[]
+  chartStartDate?: string
+  chartEndDate?: string
   onTaskClick: (task: Task) => void
   onTaskDateChange: (taskId: string, start: Date, end: Date) => void
   onTaskReorder?: (tasks: Task[]) => void
@@ -17,7 +19,7 @@ interface GanttChartProps {
 }
 
 export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
-  ({ tasks, onTaskClick, onTaskDateChange, onTaskReorder, onDependencyAdd, onDependencyRemove, onReady }, ref) => {
+  ({ tasks, chartStartDate, chartEndDate, onTaskClick, onTaskDateChange, onTaskReorder, onDependencyAdd, onDependencyRemove, onReady }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const ganttRef = useRef<Gantt | null>(null)
     const lastDateChangeRef = useRef<number>(0)
@@ -39,6 +41,12 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
     // Store tasks ref for lookup by id in click handler
     const tasksRef = useRef(tasks)
     tasksRef.current = tasks
+
+    // Refs for date bounds so the monkey-patch closure always has current values
+    const chartStartDateRef = useRef(chartStartDate)
+    chartStartDateRef.current = chartStartDate
+    const chartEndDateRef = useRef(chartEndDate)
+    chartEndDateRef.current = chartEndDate
 
     useGanttReorder({
       containerRef,
@@ -62,8 +70,11 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
       }
 
       const frappeTasks = transformToFrappeTasks(tasks)
+      const hasDateBounds = !!chartStartDate || !!chartEndDate
 
       if (ganttRef.current) {
+        // Update infinite_padding dynamically based on current date bounds
+        ganttRef.current.options.infinite_padding = !hasDateBounds
         ganttRef.current.refresh(frappeTasks)
         return
       }
@@ -78,6 +89,7 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
         readonly_progress: true,
         today_button: true,
         view_mode_select: true,
+        infinite_padding: !hasDateBounds,
         on_click: (frappeTask: FrappeTask) => {
           // Suppress click that fires right after a drag/resize
           if (Date.now() - lastDateChangeRef.current < 500) return
@@ -91,8 +103,34 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
         },
       })
 
+      // Monkey-patch setup_gantt_dates so date-bound overrides survive
+      // every refresh/view-mode change automatically
+      const origSetupGanttDates = ganttRef.current.setup_gantt_dates.bind(ganttRef.current)
+      ganttRef.current.setup_gantt_dates = function (refresh: boolean) {
+        origSetupGanttDates(refresh)
+        const startStr = chartStartDateRef.current
+        const endStr = chartEndDateRef.current
+        if (startStr) {
+          const d = new Date(startStr + 'T00:00:00')
+          if (!isNaN(d.getTime())) {
+            this.gantt_start = d
+          }
+        }
+        if (endStr) {
+          const d = new Date(endStr + 'T00:00:00')
+          if (!isNaN(d.getTime())) {
+            this.gantt_end = d
+          }
+        }
+      }
+
+      // Re-render with the overridden date bounds applied
+      if (hasDateBounds) {
+        ganttRef.current.change_view_mode()
+      }
+
       onReadyRef.current()
-    }, [tasks])
+    }, [tasks, chartStartDate, chartEndDate])
 
     if (tasks.length === 0) {
       return (

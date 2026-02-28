@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import type { Task } from './types'
+import type { Task, AppSettings } from './types'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useUndoRedo } from './hooks/useUndoRedo'
 import { GanttChart } from './components/GanttChart'
@@ -16,6 +16,7 @@ export default function App() {
   const [storedTasks, setStoredTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
   const { setValue: setTasks, undo: undoTasks, redo: redoTasks } = useUndoRedo(storedTasks, setStoredTasks)
   const tasks = storedTasks
+  const [appSettings, setAppSettings] = useLocalStorage<AppSettings>('gantt-settings', { chartStartDate: '', chartEndDate: '' })
   const [googleClientId, setGoogleClientId] = useLocalStorage<string>('gantt-google-client-id', '')
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -203,6 +204,8 @@ export default function App() {
           <GanttChart
             ref={chartRef}
             tasks={tasks}
+            chartStartDate={appSettings.chartStartDate}
+            chartEndDate={appSettings.chartEndDate}
             onTaskClick={handleEdit}
             onTaskDateChange={handleTaskDateChange}
             onTaskReorder={handleTaskReorder}
@@ -246,8 +249,10 @@ export default function App() {
 
       {isSettingsOpen && (
         <SettingsModal
+          settings={appSettings}
           clientId={googleClientId}
-          onSave={(id) => {
+          onSave={(settings, id) => {
+            setAppSettings(settings)
             setGoogleClientId(id)
             setIsSettingsOpen(false)
           }}
