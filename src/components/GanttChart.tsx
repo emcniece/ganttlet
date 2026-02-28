@@ -3,16 +3,18 @@ import Gantt from 'frappe-gantt'
 import type { FrappeTask } from 'frappe-gantt'
 import type { Task } from '../types'
 import { transformToFrappeTasks } from '../utils/transformTasks'
+import { useGanttReorder } from '../hooks/useGanttReorder'
 
 interface GanttChartProps {
   tasks: Task[]
   onTaskClick: (task: Task) => void
   onTaskDateChange: (taskId: string, start: Date, end: Date) => void
+  onTaskReorder?: (tasks: Task[]) => void
   onReady: () => void
 }
 
 export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
-  ({ tasks, onTaskClick, onTaskDateChange, onReady }, ref) => {
+  ({ tasks, onTaskClick, onTaskDateChange, onTaskReorder, onReady }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const ganttRef = useRef<Gantt | null>(null)
     const lastDateChangeRef = useRef<number>(0)
@@ -22,12 +24,21 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
     onTaskClickRef.current = onTaskClick
     const onTaskDateChangeRef = useRef(onTaskDateChange)
     onTaskDateChangeRef.current = onTaskDateChange
+    const onTaskReorderRef = useRef(onTaskReorder)
+    onTaskReorderRef.current = onTaskReorder
     const onReadyRef = useRef(onReady)
     onReadyRef.current = onReady
 
     // Store tasks ref for lookup by id in click handler
     const tasksRef = useRef(tasks)
     tasksRef.current = tasks
+
+    useGanttReorder({
+      containerRef,
+      ganttRef,
+      tasks,
+      onReorder: (reordered) => onTaskReorderRef.current?.(reordered),
+    })
 
     useEffect(() => {
       if (!containerRef.current || tasks.length === 0) {

@@ -1,6 +1,14 @@
 import type { Task } from '../types'
 import type { FrappeTask } from 'frappe-gantt'
 
+export function reorderTasks(tasks: Task[], fromIndex: number, toIndex: number): Task[] {
+  if (fromIndex === toIndex) return tasks
+  const result = [...tasks]
+  const [moved] = result.splice(fromIndex, 1)
+  result.splice(toIndex, 0, moved)
+  return result
+}
+
 export function transformToFrappeTasks(tasks: Task[]): FrappeTask[] {
   return tasks.map((t) => ({
     id: t.id,

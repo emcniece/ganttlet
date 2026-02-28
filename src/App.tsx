@@ -52,6 +52,24 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [getHashRoute])
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (isFormOpen) {
+        setIsFormOpen(false)
+        setEditingTask(null)
+      } else if (isSettingsOpen) {
+        setIsSettingsOpen(false)
+      } else if (isPrivacyOpen) {
+        closePrivacy()
+      } else if (isTermsOpen) {
+        closeTerms()
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isFormOpen, isSettingsOpen, isPrivacyOpen, isTermsOpen])
+
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -102,6 +120,13 @@ export default function App() {
     [setTasks]
   )
 
+  const handleTaskReorder = useCallback(
+    (reordered: Task[]) => {
+      setTasks(reordered)
+    },
+    [setTasks]
+  )
+
   const handleImport = (imported: Task[]) => {
     setTasks(imported)
     setChartReady(false)
@@ -136,12 +161,13 @@ export default function App() {
             tasks={tasks}
             onTaskClick={handleEdit}
             onTaskDateChange={handleTaskDateChange}
+            onTaskReorder={handleTaskReorder}
             onReady={handleChartReady}
           />
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <TaskTable tasks={tasks} onEdit={handleEdit} onDelete={handleDelete} />
+          <TaskTable tasks={tasks} onEdit={handleEdit} onDelete={handleDelete} onReorder={handleTaskReorder} />
         </div>
 
         <footer className="mt-6 text-center text-xs text-gray-400">

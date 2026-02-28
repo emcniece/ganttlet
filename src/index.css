@@ -11,3 +11,21 @@
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
+
+.gantt .bar-wrapper.dragging {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gantt .bar-wrapper.dragging .bar {
+  stroke: #3b82f6;
+  stroke-width: 2;
+}
+
+.gantt .reorder-indicator {
+  pointer-events: none;
+}
+
+.gantt-container.reordering {
+  cursor: grabbing;
+}
