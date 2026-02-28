@@ -13,8 +13,12 @@ A free, static Gantt chart tool. No signups, no backend — just open it and sta
 - **Multiple view modes** — switch between Day, Week, Month, and Year views
 - **Task management** — add, edit, and delete tasks with a form-based UI
 - **Task colors** — assign colors to tasks for visual grouping
-- **Dependencies** — link tasks together with dependency arrows
-- **Persistent** — tasks save to localStorage automatically
+- **Dependencies** — link tasks together with dependency arrows; interactive endpoint handles for linking/unlinking
+- **Drag-to-reorder** — vertically drag chart bars or table rows to reorder tasks
+- **Undo/redo** — Ctrl+Z / Ctrl+Shift+Z to undo and redo task mutations
+- **Chart date range** — optionally set start/end dates in Settings to constrain the visible timeline
+- **Tabbed settings** — General tab for chart options, OAuth tab for Google Sheets configuration
+- **Persistent** — tasks and settings save to localStorage automatically
 - **JSON import/export** — save your project to a file, load it back anytime
 - **PNG export** — download a cropped, high-resolution image with date headers
 - **Google Sheets export** — push tasks to a Google Sheet via OAuth

@@ -56,9 +56,10 @@ export function SettingsModal({ settings, clientId, onSave, onCancel }: Settings
         {activeTab === 'general' && (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Chart Start Date</label>
+              <label htmlFor="chart-start-date" className="block text-sm font-medium mb-1">Chart Start Date</label>
               <div className="flex gap-2">
                 <input
+                  id="chart-start-date"
                   type="date"
                   value={chartStartDate}
                   onChange={(e) => setChartStartDate(e.target.value)}
@@ -76,9 +77,10 @@ export function SettingsModal({ settings, clientId, onSave, onCancel }: Settings
               <p className="text-xs text-gray-400 mt-1">Leave empty for automatic range</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Chart End Date</label>
+              <label htmlFor="chart-end-date" className="block text-sm font-medium mb-1">Chart End Date</label>
               <div className="flex gap-2">
                 <input
+                  id="chart-end-date"
                   type="date"
                   value={chartEndDate}
                   onChange={(e) => setChartEndDate(e.target.value)}
@@ -102,10 +104,11 @@ export function SettingsModal({ settings, clientId, onSave, onCancel }: Settings
         {activeTab === 'oauth' && (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label htmlFor="oauth-client-id" className="block text-sm font-medium mb-1">
                 Google Cloud OAuth Client ID
               </label>
               <input
+                id="oauth-client-id"
                 type="text"
                 value={oauthClientId}
                 onChange={(e) => setOauthClientId(e.target.value)}

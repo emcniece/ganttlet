@@ -1,12 +1,25 @@
 import type { Task } from './types'
 
+function formatDate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function daysFromToday(offset: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + offset)
+  return formatDate(d)
+}
+
 export const sampleTasks: Task[] = [
   {
     id: 'sample-1',
     name: 'Research & Planning',
     resource: 'Planning',
-    start: '2025-03-01',
-    end: '2025-03-07',
+    start: daysFromToday(0),
+    end: daysFromToday(6),
     duration: null,
     percentComplete: 100,
     dependencies: [],
@@ -16,8 +29,8 @@ export const sampleTasks: Task[] = [
     id: 'sample-2',
     name: 'Design Mockups',
     resource: 'Design',
-    start: '2025-03-08',
-    end: '2025-03-14',
+    start: daysFromToday(7),
+    end: daysFromToday(13),
     duration: null,
     percentComplete: 75,
     dependencies: ['sample-1'],
@@ -27,8 +40,8 @@ export const sampleTasks: Task[] = [
     id: 'sample-3',
     name: 'Core Development',
     resource: 'Development',
-    start: '2025-03-10',
-    end: '2025-03-24',
+    start: daysFromToday(9),
+    end: daysFromToday(23),
     duration: null,
     percentComplete: 40,
     dependencies: ['sample-1'],
@@ -38,8 +51,8 @@ export const sampleTasks: Task[] = [
     id: 'sample-4',
     name: 'Testing & QA',
     resource: 'QA',
-    start: '2025-03-25',
-    end: '2025-03-31',
+    start: daysFromToday(24),
+    end: daysFromToday(30),
     duration: null,
     percentComplete: 0,
     dependencies: ['sample-3'],
@@ -49,8 +62,8 @@ export const sampleTasks: Task[] = [
     id: 'sample-5',
     name: 'Launch',
     resource: 'Planning',
-    start: '2025-04-01',
-    end: '2025-04-03',
+    start: daysFromToday(31),
+    end: daysFromToday(33),
     duration: null,
     percentComplete: 0,
     dependencies: ['sample-2', 'sample-4'],
