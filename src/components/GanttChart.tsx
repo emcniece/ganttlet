@@ -4,17 +4,20 @@ import type { FrappeTask } from 'frappe-gantt'
 import type { Task } from '../types'
 import { transformToFrappeTasks } from '../utils/transformTasks'
 import { useGanttReorder } from '../hooks/useGanttReorder'
+import { useGanttDependencyLink } from '../hooks/useGanttDependencyLink'
 
 interface GanttChartProps {
   tasks: Task[]
   onTaskClick: (task: Task) => void
   onTaskDateChange: (taskId: string, start: Date, end: Date) => void
   onTaskReorder?: (tasks: Task[]) => void
+  onDependencyAdd?: (fromTaskId: string, toTaskId: string) => void
+  onDependencyRemove?: (fromTaskId: string, toTaskId: string) => void
   onReady: () => void
 }
 
 export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
-  ({ tasks, onTaskClick, onTaskDateChange, onTaskReorder, onReady }, ref) => {
+  ({ tasks, onTaskClick, onTaskDateChange, onTaskReorder, onDependencyAdd, onDependencyRemove, onReady }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const ganttRef = useRef<Gantt | null>(null)
     const lastDateChangeRef = useRef<number>(0)
@@ -26,6 +29,10 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
     onTaskDateChangeRef.current = onTaskDateChange
     const onTaskReorderRef = useRef(onTaskReorder)
     onTaskReorderRef.current = onTaskReorder
+    const onDependencyAddRef = useRef(onDependencyAdd)
+    onDependencyAddRef.current = onDependencyAdd
+    const onDependencyRemoveRef = useRef(onDependencyRemove)
+    onDependencyRemoveRef.current = onDependencyRemove
     const onReadyRef = useRef(onReady)
     onReadyRef.current = onReady
 
@@ -38,6 +45,14 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
       ganttRef,
       tasks,
       onReorder: (reordered) => onTaskReorderRef.current?.(reordered),
+    })
+
+    useGanttDependencyLink({
+      containerRef,
+      ganttRef,
+      tasks,
+      onDependencyAdd: (from, to) => onDependencyAddRef.current?.(from, to),
+      onDependencyRemove: (from, to) => onDependencyRemoveRef.current?.(from, to),
     })
 
     useEffect(() => {

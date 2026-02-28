@@ -127,6 +127,31 @@ export default function App() {
     [setTasks]
   )
 
+  const handleDependencyAdd = useCallback(
+    (fromTaskId: string, toTaskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== toTaskId) return t
+          if (t.dependencies.includes(fromTaskId)) return t
+          return { ...t, dependencies: [...t.dependencies, fromTaskId] }
+        })
+      )
+    },
+    [setTasks]
+  )
+
+  const handleDependencyRemove = useCallback(
+    (fromTaskId: string, toTaskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== toTaskId) return t
+          return { ...t, dependencies: t.dependencies.filter((id) => id !== fromTaskId) }
+        })
+      )
+    },
+    [setTasks]
+  )
+
   const handleImport = (imported: Task[]) => {
     setTasks(imported)
     setChartReady(false)
@@ -162,6 +187,8 @@ export default function App() {
             onTaskClick={handleEdit}
             onTaskDateChange={handleTaskDateChange}
             onTaskReorder={handleTaskReorder}
+            onDependencyAdd={handleDependencyAdd}
+            onDependencyRemove={handleDependencyRemove}
             onReady={handleChartReady}
           />
         </div>
