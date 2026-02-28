@@ -10,6 +10,11 @@ export interface Task {
   color?: string // hex colour for gantt bar
 }
 
+export interface AppSettings {
+  chartStartDate: string // ISO YYYY-MM-DD or '' (auto)
+  chartEndDate: string   // ISO YYYY-MM-DD or '' (auto)
+}
+
 export interface AppData {
   version: number
   tasks: Task[]

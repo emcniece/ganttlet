@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import type { Task } from './types'
+import type { Task, AppSettings } from './types'
 import { useLocalStorage } from './hooks/useLocalStorage'
+import { useUndoRedo } from './hooks/useUndoRedo'
 import { GanttChart } from './components/GanttChart'
 import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
@@ -12,7 +13,10 @@ import { sampleTasks } from './sampleTasks'
 import { applyDateChange } from './utils/transformTasks'
 
 export default function App() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
+  const [storedTasks, setStoredTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
+  const { setValue: setTasks, undo: undoTasks, redo: redoTasks } = useUndoRedo(storedTasks, setStoredTasks)
+  const tasks = storedTasks
+  const [appSettings, setAppSettings] = useLocalStorage<AppSettings>('gantt-settings', { chartStartDate: '', chartEndDate: '' })
   const [googleClientId, setGoogleClientId] = useLocalStorage<string>('gantt-google-client-id', '')
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -51,6 +55,40 @@ export default function App() {
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [getHashRoute])
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (isFormOpen) {
+        setIsFormOpen(false)
+        setEditingTask(null)
+      } else if (isSettingsOpen) {
+        setIsSettingsOpen(false)
+      } else if (isPrivacyOpen) {
+        closePrivacy()
+      } else if (isTermsOpen) {
+        closeTerms()
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isFormOpen, isSettingsOpen, isPrivacyOpen, isTermsOpen])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (isFormOpen || isSettingsOpen) return
+      const mod = e.metaKey || e.ctrlKey
+      if (mod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        undoTasks()
+      } else if ((mod && e.key === 'z' && e.shiftKey) || (e.ctrlKey && e.key === 'y')) {
+        e.preventDefault()
+        redoTasks()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isFormOpen, isSettingsOpen, undoTasks, redoTasks])
 
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
@@ -102,6 +140,38 @@ export default function App() {
     [setTasks]
   )
 
+  const handleTaskReorder = useCallback(
+    (reordered: Task[]) => {
+      setTasks(reordered)
+    },
+    [setTasks]
+  )
+
+  const handleDependencyAdd = useCallback(
+    (fromTaskId: string, toTaskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== toTaskId) return t
+          if (t.dependencies.includes(fromTaskId)) return t
+          return { ...t, dependencies: [...t.dependencies, fromTaskId] }
+        })
+      )
+    },
+    [setTasks]
+  )
+
+  const handleDependencyRemove = useCallback(
+    (fromTaskId: string, toTaskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== toTaskId) return t
+          return { ...t, dependencies: t.dependencies.filter((id) => id !== fromTaskId) }
+        })
+      )
+    },
+    [setTasks]
+  )
+
   const handleImport = (imported: Task[]) => {
     setTasks(imported)
     setChartReady(false)
@@ -134,14 +204,19 @@ export default function App() {
           <GanttChart
             ref={chartRef}
             tasks={tasks}
+            chartStartDate={appSettings.chartStartDate}
+            chartEndDate={appSettings.chartEndDate}
             onTaskClick={handleEdit}
             onTaskDateChange={handleTaskDateChange}
+            onTaskReorder={handleTaskReorder}
+            onDependencyAdd={handleDependencyAdd}
+            onDependencyRemove={handleDependencyRemove}
             onReady={handleChartReady}
           />
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <TaskTable tasks={tasks} onEdit={handleEdit} onDelete={handleDelete} />
+          <TaskTable tasks={tasks} onEdit={handleEdit} onDelete={handleDelete} onReorder={handleTaskReorder} />
         </div>
 
         <footer className="mt-6 text-center text-xs text-gray-400">
@@ -160,6 +235,11 @@ export default function App() {
           task={editingTask}
           tasks={tasks}
           onSave={handleSave}
+          onDelete={(id) => {
+            handleDelete(id)
+            setIsFormOpen(false)
+            setEditingTask(null)
+          }}
           onCancel={() => {
             setIsFormOpen(false)
             setEditingTask(null)
@@ -169,8 +249,10 @@ export default function App() {
 
       {isSettingsOpen && (
         <SettingsModal
+          settings={appSettings}
           clientId={googleClientId}
-          onSave={(id) => {
+          onSave={(settings, id) => {
+            setAppSettings(settings)
             setGoogleClientId(id)
             setIsSettingsOpen(false)
           }}

@@ -5,9 +5,105 @@
   min-width: 100%;
 }
 
+/* Match progress bar corner radius to main bar to prevent colour bleeding */
+.gantt .bar-progress {
+  rx: 3px;
+  ry: 3px;
+}
+
 .gantt .bar-label,
 .gantt .lower-text,
 .gantt .upper-text {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+.gantt .bar-wrapper.dragging {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gantt .bar-wrapper.dragging .bar {
+  stroke: #3b82f6;
+  stroke-width: 2;
+}
+
+.gantt .reorder-indicator {
+  pointer-events: none;
+}
+
+.gantt-container.reordering {
+  cursor: grabbing;
+}
+
+/* Move frappe-gantt resize handles inward so dep-handles at edges are accessible */
+.gantt .handle.left {
+  transform: translateX(10px);
+}
+.gantt .handle.right {
+  transform: translateX(-10px);
+}
+
+/* Dependency link handles */
+.gantt .dep-handle {
+  fill: #3b82f6;
+  stroke: white;
+  stroke-width: 1.5;
+  opacity: 0;
+  cursor: crosshair;
+  transition: opacity 0.15s ease;
+  pointer-events: all;
+}
+.gantt .bar-wrapper:hover .dep-handle,
+.gantt .dep-handle:hover {
+  opacity: 1;
+}
+
+/* Temporary linking line */
+.gantt .dep-link-line {
+  stroke: #3b82f6;
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+  pointer-events: none;
+}
+
+/* Active state on origin task while linking */
+.gantt .bar-wrapper.link-source .bar {
+  stroke: #3b82f6;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));
+}
+.gantt .bar-wrapper.link-source .dep-handle {
+  opacity: 1;
+}
+
+/* Active state on destination task while hovering during link drag */
+.gantt .bar-wrapper.link-target .bar {
+  stroke: #3b82f6;
+  stroke-width: 2.5;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+}
+
+/* Highlight valid drop targets */
+.gantt-container.linking {
+  cursor: crosshair;
+}
+.gantt-container.linking .bar-wrapper:not(.link-source) .bar {
+  stroke: #3b82f6;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 2;
+}
+
+/* Clickable arrows for removal */
+.gantt g.arrow path.arrow-hover {
+  stroke: #ef4444;
+  stroke-width: 2;
+}
+.gantt g.arrow .arrow-hit-area {
+  stroke: transparent;
+  stroke-width: 14;
+  fill: none;
+  pointer-events: stroke;
+  cursor: pointer;
 }

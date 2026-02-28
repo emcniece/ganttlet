@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { Task } from '../types'
 import { exportJSON, importJSON } from '../utils/fileIO'
 import { exportPNG, openChartImage } from '../utils/exportPNG'
@@ -16,7 +16,21 @@ interface ToolbarProps {
 
 export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId, onOpenSettings }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
+  const [open, setOpen] = useState(false)
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -32,6 +46,7 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
 
   const handleExportPNG = async () => {
     if (!chartRef.current) return
+    setOpen(false)
     try {
       await exportPNG(chartRef.current)
     } catch {
@@ -41,6 +56,7 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
 
   const handleOpenImage = async () => {
     if (!chartRef.current) return
+    setOpen(false)
     try {
       await openChartImage(chartRef.current)
     } catch {
@@ -49,6 +65,7 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
   }
 
   const handleExportSheets = async () => {
+    setOpen(false)
     if (!googleClientId) {
       onOpenSettings()
       return
@@ -66,21 +83,68 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
     }
   }
 
+  const itemClass = (disabled?: boolean) =>
+    `w-full text-left px-3 py-1.5 text-sm ${
+      disabled
+        ? 'text-gray-400 cursor-not-allowed'
+        : 'text-gray-700 hover:bg-gray-100'
+    }`
+
   return (
     <div className="flex flex-wrap gap-2">
-      <button
-        onClick={() => exportJSON(tasks)}
-        disabled={tasks.length === 0}
-        className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Export JSON
-      </button>
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800"
-      >
-        Import JSON
-      </button>
+      <div ref={dropdownRef} className="relative">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 flex items-center gap-1"
+        >
+          {exporting ? 'Exporting...' : 'Export / Import'}
+          <svg className="w-3 h-3 ml-0.5" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 5l3 3 3-3" />
+          </svg>
+        </button>
+
+        {open && (
+          <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+            <button
+              onClick={() => { exportJSON(tasks); setOpen(false) }}
+              disabled={tasks.length === 0}
+              className={itemClass(tasks.length === 0)}
+            >
+              Export JSON
+            </button>
+            <button
+              onClick={() => { fileInputRef.current?.click(); setOpen(false) }}
+              className={itemClass()}
+            >
+              Import JSON
+            </button>
+            <hr className="my-1 border-gray-200" />
+            <button
+              onClick={handleExportPNG}
+              disabled={!chartReady || tasks.length === 0}
+              className={itemClass(!chartReady || tasks.length === 0)}
+            >
+              Export PNG
+            </button>
+            <button
+              onClick={handleOpenImage}
+              disabled={!chartReady || tasks.length === 0}
+              className={itemClass(!chartReady || tasks.length === 0)}
+            >
+              View Image
+            </button>
+            <hr className="my-1 border-gray-200" />
+            <button
+              onClick={handleExportSheets}
+              disabled={exporting || tasks.length === 0}
+              className={itemClass(exporting || tasks.length === 0)}
+            >
+              Export to Google Sheets
+            </button>
+          </div>
+        )}
+      </div>
+
       <input
         ref={fileInputRef}
         type="file"
@@ -88,28 +152,6 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
         onChange={handleImport}
         className="hidden"
       />
-      <button
-        onClick={handleExportPNG}
-        disabled={!chartReady || tasks.length === 0}
-        className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Export PNG
-      </button>
-      <button
-        onClick={handleOpenImage}
-        disabled={!chartReady || tasks.length === 0}
-        className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
-        title="Open chart image in a new tab"
-      >
-        View Image
-      </button>
-      <button
-        onClick={handleExportSheets}
-        disabled={exporting || tasks.length === 0}
-        className="px-3 py-1.5 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {exporting ? 'Exporting...' : 'Export to Sheets'}
-      </button>
       <button
         onClick={onOpenSettings}
         className="px-2 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"

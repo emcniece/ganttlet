@@ -5,6 +5,7 @@ interface TaskFormProps {
   task: Task | null // null = add mode, Task = edit mode
   tasks: Task[] // all tasks (for dependency picker)
   onSave: (task: Task) => void
+  onDelete?: (id: string) => void
   onCancel: () => void
 }
 
@@ -26,7 +27,7 @@ function todayISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export function TaskForm({ task, tasks, onSave, onCancel }: TaskFormProps) {
+export function TaskForm({ task, tasks, onSave, onDelete, onCancel }: TaskFormProps) {
   const [name, setName] = useState('')
   const [resource, setResource] = useState('')
   const [start, setStart] = useState(todayISO())
@@ -210,20 +211,31 @@ export function TaskForm({ task, tasks, onSave, onCancel }: TaskFormProps) {
           )}
         </div>
 
-        <div className="flex justify-end gap-2 mt-5">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            {task ? 'Update' : 'Add'}
-          </button>
+        <div className="flex mt-5">
+          {task && onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(task.id)}
+              className="px-4 py-1.5 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50"
+            >
+              Delete
+            </button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              {task ? 'Update' : 'Add'}
+            </button>
+          </div>
         </div>
       </form>
     </div>
