@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import type { Task } from './types'
 import { useLocalStorage } from './hooks/useLocalStorage'
+import { useUndoRedo } from './hooks/useUndoRedo'
 import { GanttChart } from './components/GanttChart'
 import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
@@ -12,7 +13,9 @@ import { sampleTasks } from './sampleTasks'
 import { applyDateChange } from './utils/transformTasks'
 
 export default function App() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
+  const [storedTasks, setStoredTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
+  const { setValue: setTasks, undo: undoTasks, redo: redoTasks } = useUndoRedo(storedTasks, setStoredTasks)
+  const tasks = storedTasks
   const [googleClientId, setGoogleClientId] = useLocalStorage<string>('gantt-google-client-id', '')
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -69,6 +72,22 @@ export default function App() {
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
   }, [isFormOpen, isSettingsOpen, isPrivacyOpen, isTermsOpen])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (isFormOpen || isSettingsOpen) return
+      const mod = e.metaKey || e.ctrlKey
+      if (mod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        undoTasks()
+      } else if ((mod && e.key === 'z' && e.shiftKey) || (e.ctrlKey && e.key === 'y')) {
+        e.preventDefault()
+        redoTasks()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isFormOpen, isSettingsOpen, undoTasks, redoTasks])
 
   const [chartReady, setChartReady] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
@@ -213,6 +232,11 @@ export default function App() {
           task={editingTask}
           tasks={tasks}
           onSave={handleSave}
+          onDelete={(id) => {
+            handleDelete(id)
+            setIsFormOpen(false)
+            setEditingTask(null)
+          }}
           onCancel={() => {
             setIsFormOpen(false)
             setEditingTask(null)
