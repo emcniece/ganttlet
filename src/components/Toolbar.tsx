@@ -4,6 +4,7 @@ import { exportJSON, importJSON } from '../utils/fileIO'
 import { exportPNG, openChartImage } from '../utils/exportPNG'
 import { getAccessToken } from '../utils/googleAuth'
 import { exportToGoogleSheets } from '../utils/googleSheets'
+import { csvToTasks } from '../utils/csvImport'
 
 interface ToolbarProps {
   tasks: Task[]
@@ -12,10 +13,12 @@ interface ToolbarProps {
   chartReady: boolean
   googleClientId: string
   onOpenSettings: () => void
+  onImportSheet: (urlOrId: string) => void
 }
 
-export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId, onOpenSettings }: ToolbarProps) {
+export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId, onOpenSettings, onImportSheet }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const csvInputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
   const [open, setOpen] = useState(false)
@@ -62,6 +65,30 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
     } catch {
       alert('Failed to generate chart image.')
     }
+  }
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const imported = csvToTasks(text)
+      if (imported.length === 0) {
+        alert('No tasks found in CSV file')
+        return
+      }
+      onImport(imported)
+    } catch (err) {
+      alert(`Failed to import CSV: ${err instanceof Error ? err.message : String(err)}`)
+    }
+    if (csvInputRef.current) csvInputRef.current.value = ''
+  }
+
+  const handleImportSheet = () => {
+    setOpen(false)
+    const input = window.prompt('Enter Google Sheet URL or ID:\n\n(The sheet must be published via File > Share > Publish to web)')
+    if (!input?.trim()) return
+    onImportSheet(input.trim())
   }
 
   const handleExportSheets = async () => {
@@ -141,6 +168,19 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
             >
               Export to Google Sheets
             </button>
+            <button
+              onClick={handleImportSheet}
+              className={itemClass()}
+            >
+              Import from Google Sheet
+            </button>
+            <hr className="my-1 border-gray-200" />
+            <button
+              onClick={() => { csvInputRef.current?.click(); setOpen(false) }}
+              className={itemClass()}
+            >
+              Import CSV
+            </button>
           </div>
         )}
       </div>
@@ -150,6 +190,13 @@ export function Toolbar({ tasks, onImport, chartRef, chartReady, googleClientId,
         type="file"
         accept=".json"
         onChange={handleImport}
+        className="hidden"
+      />
+      <input
+        ref={csvInputRef}
+        type="file"
+        accept=".csv"
+        onChange={handleImportCSV}
         className="hidden"
       />
       <button

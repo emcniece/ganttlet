@@ -8,6 +8,7 @@ export function useUndoRedo<T>(
   setValue: React.Dispatch<React.SetStateAction<T>>
   undo: () => void
   redo: () => void
+  reset: () => void
   canUndo: boolean
   canRedo: boolean
 } {
@@ -51,10 +52,18 @@ export function useUndoRedo<T>(
     setState(next)
   }, [setState])
 
+  const reset = useCallback(() => {
+    undoStack.current = []
+    redoStack.current = []
+    setUndoCount(0)
+    setRedoCount(0)
+  }, [])
+
   return {
     setValue,
     undo,
     redo,
+    reset,
     canUndo: undoCount > 0,
     canRedo: redoCount > 0,
   }
