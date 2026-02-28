@@ -5,6 +5,12 @@
   min-width: 100%;
 }
 
+/* Match progress bar corner radius to main bar to prevent colour bleeding */
+.gantt .bar-progress {
+  rx: 3px;
+  ry: 3px;
+}
+
 .gantt .bar-label,
 .gantt .lower-text,
 .gantt .upper-text {
