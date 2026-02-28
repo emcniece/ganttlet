@@ -47,8 +47,11 @@ declare module 'frappe-gantt' {
     refresh(tasks: FrappeTask[]): void
     change_view_mode(mode?: string): void
     setup_gantt_dates(refresh: boolean): void
+    make_arrows(): void
     gantt_start: Date
     gantt_end: Date
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    arrows: any[]
     options: GanttOptions & { bar_height: number; padding: number }
     config: { header_height: number }
   }
