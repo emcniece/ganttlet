@@ -1,22 +1,35 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import type { Task, AppSettings } from './types'
+import type { Task } from './types'
 import { useLocalStorage } from './hooks/useLocalStorage'
-import { useUndoRedo } from './hooks/useUndoRedo'
+import { useProjectManager } from './hooks/useProjectManager'
 import { GanttChart } from './components/GanttChart'
 import { TaskTable } from './components/TaskTable'
 import { TaskForm } from './components/TaskForm'
 import { Toolbar } from './components/Toolbar'
+import { ProjectSwitcher } from './components/ProjectSwitcher'
 import { SettingsModal } from './components/SettingsModal'
 import { LegalModal } from './components/LegalModal'
-import { sampleTasks } from './sampleTasks'
 import { applyDateChange } from './utils/transformTasks'
+import { extractSheetId, fetchSheetCSV } from './utils/sheetFetch'
+import { csvToTasks } from './utils/csvImport'
 
 export default function App() {
-  const [storedTasks, setStoredTasks] = useLocalStorage<Task[]>('gantt-tasks', sampleTasks)
-  const { setValue: setTasks, undo: undoTasks, redo: redoTasks } = useUndoRedo(storedTasks, setStoredTasks)
-  const tasks = storedTasks
-  const [appSettings, setAppSettings] = useLocalStorage<AppSettings>('gantt-settings', { chartStartDate: '', chartEndDate: '' })
+  const {
+    projects,
+    activeProjectId,
+    tasks,
+    setTasks,
+    appSettings,
+    setAppSettings,
+    undoTasks,
+    redoTasks,
+    createProject,
+    switchProject,
+    renameProject,
+    deleteProject,
+  } = useProjectManager()
+
   const [googleClientId, setGoogleClientId] = useLocalStorage<string>('gantt-google-client-id', '')
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -46,15 +59,46 @@ export default function App() {
     window.history.replaceState(null, '', window.location.pathname)
   }
 
+  const handleSheetImport = useCallback(async (urlOrId: string) => {
+    try {
+      const sheetId = extractSheetId(urlOrId)
+      const csv = await fetchSheetCSV(sheetId)
+      const imported = csvToTasks(csv)
+      if (imported.length === 0) {
+        alert('No tasks found in the Google Sheet')
+        return
+      }
+      const projectId = createProject(`Sheet Import`, imported)
+      switchProject(projectId)
+      window.history.replaceState(null, '', window.location.pathname)
+    } catch (err) {
+      alert(`Failed to import sheet: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }, [createProject, switchProject])
+
+  // Handle #/sheet/<id> on mount and hashchange
   useEffect(() => {
     const handleHashChange = () => {
       const route = getHashRoute()
       setIsPrivacyOpen(route === '/privacy')
       setIsTermsOpen(route === '/terms')
+
+      const sheetMatch = route.match(/^\/sheet\/(.+)$/)
+      if (sheetMatch) {
+        handleSheetImport(sheetMatch[1])
+      }
     }
     window.addEventListener('hashchange', handleHashChange)
+
+    // Check on mount
+    const initialRoute = getHashRoute()
+    const initialSheetMatch = initialRoute.match(/^\/sheet\/(.+)$/)
+    if (initialSheetMatch) {
+      handleSheetImport(initialSheetMatch[1])
+    }
+
     return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [getHashRoute])
+  }, [getHashRoute, handleSheetImport])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -181,7 +225,17 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Ganttlet</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">Ganttlet</h1>
+            <ProjectSwitcher
+              projects={projects}
+              activeProjectId={activeProjectId}
+              onSwitch={switchProject}
+              onCreate={(name) => createProject(name)}
+              onRename={renameProject}
+              onDelete={deleteProject}
+            />
+          </div>
           <div className="flex gap-3 items-center">
             <Toolbar
               tasks={tasks}
@@ -190,6 +244,7 @@ export default function App() {
               chartReady={chartReady}
               googleClientId={googleClientId}
               onOpenSettings={() => setIsSettingsOpen(true)}
+              onImportSheet={handleSheetImport}
             />
             <button
               onClick={handleAdd}

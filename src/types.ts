@@ -19,3 +19,13 @@ export interface AppData {
   version: number
   tasks: Task[]
 }
+
+export interface Project {
+  id: string
+  name: string
+}
+
+export interface ProjectData {
+  tasks: Task[]
+  settings: AppSettings
+}
