@@ -282,6 +282,10 @@ export default function App() {
           <a href="#/terms" onClick={openTerms} className="hover:text-gray-600 underline">
             Terms of Service
           </a>
+          <span className="mx-2">·</span>
+          <a href="https://github.com/emcniece/ganttlet" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 underline">
+            GitHub
+          </a>
         </footer>
       </div>
 

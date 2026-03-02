@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import Gantt from 'frappe-gantt'
 import type { FrappeTask } from 'frappe-gantt'
 import type { Task } from '../types'
@@ -132,6 +132,10 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
     const chartEndDateRef = useRef(chartEndDate)
     chartEndDateRef.current = chartEndDate
 
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [headerHeight, setHeaderHeight] = useState(50)
+    const sidebarBodyRef = useRef<HTMLDivElement>(null)
+
     useGanttReorder({
       containerRef,
       ganttRef,
@@ -228,6 +232,33 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
       onReadyRef.current()
     }, [tasks, chartStartDate, chartEndDate])
 
+    // Measure gantt header height and sync sidebar scroll
+    useEffect(() => {
+      if (!containerRef.current || !ganttRef.current) return
+
+      const ganttContainer = containerRef.current.querySelector('.gantt-container') as HTMLElement
+      if (!ganttContainer) return
+
+      const gridHeader = ganttContainer.querySelector('.grid-header') as HTMLElement
+      if (!gridHeader) return
+
+      setHeaderHeight(gridHeader.offsetHeight)
+      const observer = new ResizeObserver(() => setHeaderHeight(gridHeader.offsetHeight))
+      observer.observe(gridHeader)
+
+      const syncScroll = () => {
+        if (sidebarBodyRef.current) {
+          sidebarBodyRef.current.scrollTop = ganttContainer.scrollTop
+        }
+      }
+      ganttContainer.addEventListener('scroll', syncScroll)
+
+      return () => {
+        observer.disconnect()
+        ganttContainer.removeEventListener('scroll', syncScroll)
+      }
+    }, [tasks, chartStartDate, chartEndDate])
+
     if (tasks.length === 0) {
       return (
         <div className="flex items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg text-gray-500">
@@ -236,9 +267,52 @@ export const GanttChart = forwardRef<HTMLDivElement, GanttChartProps>(
       )
     }
 
+    const rowHeight = ganttRef.current?.options
+      ? ganttRef.current.options.bar_height + ganttRef.current.options.padding
+      : 48
     return (
       <div ref={ref}>
-        <div ref={containerRef} />
+        <div className="flex">
+          <div
+            className="flex-shrink-0 flex flex-col border-r border-gray-200 bg-white overflow-hidden transition-[width] duration-200"
+            style={{ width: sidebarOpen ? 180 : 24 }}
+          >
+            <div
+              className="flex items-end px-1 pb-1 flex-shrink-0"
+              style={{ height: headerHeight }}
+            >
+              <button
+                onClick={() => setSidebarOpen((v) => !v)}
+                className="flex-shrink-0 p-0.5 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+                title={sidebarOpen ? 'Collapse task list' : 'Show task list'}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={sidebarOpen ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
+                  />
+                </svg>
+              </button>
+              {sidebarOpen && (
+                <span className="ml-1 text-xs font-semibold text-gray-500 whitespace-nowrap">Tasks</span>
+              )}
+            </div>
+            <div ref={sidebarBodyRef} className="flex-1 overflow-hidden">
+              {tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="truncate px-2 text-xs text-gray-700 border-b border-gray-200"
+                  style={{ height: rowHeight, lineHeight: `${rowHeight}px` }}
+                >
+                  {sidebarOpen && task.name}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div ref={containerRef} className="flex-1 min-w-0" />
+        </div>
       </div>
     )
   }
