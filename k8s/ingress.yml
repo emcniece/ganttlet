@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ganttlet
+  namespace: ganttlet
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ganttlet.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ganttlet
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - ganttlet.example.com
+      secretName: ganttlet-tls
