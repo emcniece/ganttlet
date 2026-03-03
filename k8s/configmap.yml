@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ganttlet-config
+  namespace: ganttlet
+data:
+  NODE_ENV: production
+  PORT: "3000"
+  DATABASE_PATH: /data/ganttlet.db
+  STATIC_DIR: packages/frontend/dist
+  BASE_URL: https://ganttlet.example.com
